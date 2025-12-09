@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 
 @Controller
-@RequestMapping("/auth") // 👈 IMPORTANTE: solo /auth
+@RequestMapping("/auth")
 public class AuthController {
 
     private final RestTemplate restTemplate;
@@ -48,7 +48,7 @@ public class AuthController {
             HttpEntity<Usuario> request = new HttpEntity<>(usuario, headers);
             
             ResponseEntity<Result> response = restTemplate.exchange(
-                "http://localhost:8080/api/auth/register", // 👈 backend
+                "http://localhost:8080/api/auth/register", 
                 HttpMethod.POST,
                 request,
                 new ParameterizedTypeReference<Result>(){}
@@ -86,7 +86,7 @@ public class AuthController {
             ResponseEntity<Result> response = restTemplate.exchange(
                 "http://localhost:8080/api/auth/verify?token=" + token,
                 HttpMethod.GET,
-                null,
+                HttpEntity.EMPTY,
                 new ParameterizedTypeReference<Result>(){}
             );
         
@@ -133,7 +133,7 @@ public class AuthController {
             HttpEntity<Usuario> request = new HttpEntity<>(usuario, headers);
             
             ResponseEntity<Result> response = restTemplate.exchange(
-                "http://localhost:8080/api/auth/login", // 👈 backend
+                "http://localhost:8080/api/auth/login",
                 HttpMethod.POST,
                 request,
                 new ParameterizedTypeReference<Result>(){}
@@ -146,6 +146,8 @@ public class AuthController {
                 
                 session.setAttribute("token", data.get("token"));
                 session.setAttribute("username", data.get("username"));
+                session.setAttribute("idUsuario", data.get("idUsuario"));
+
                 
                 model.addAttribute("success", "Inicio de sesión exitoso");
                 model.addAttribute("username", data.get("username"));
@@ -183,7 +185,7 @@ public class AuthController {
             ResponseEntity<Result> response = restTemplate.exchange(
                 "http://localhost:8080/api/auth/forgot?email=" + email, // 👈 backend
                 HttpMethod.POST,
-                null,
+                HttpEntity.EMPTY,
                 new ParameterizedTypeReference<Result>(){}
             );
             
@@ -214,7 +216,7 @@ public class AuthController {
     @GetMapping("/reset")
     public String reseteContrasena(@RequestParam String token, Model model){
         model.addAttribute("token", token);
-        return "reset";   // 👈 archivo: reset-password.html
+        return "reset";   
     }
     
     @PostMapping("/reset")
@@ -227,7 +229,7 @@ public class AuthController {
             ResponseEntity<Result> response = restTemplate.exchange(
                 "http://localhost:8080/api/auth/reset?token=" + token + "&newPassword=" + newPassword,
                 HttpMethod.POST,
-                null,
+                HttpEntity.EMPTY,
                 new ParameterizedTypeReference<Result>(){}
             );
         

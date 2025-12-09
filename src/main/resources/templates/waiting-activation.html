@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Esperando Activación - TaskFlow</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .bg-shape {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.1;
+            animation: float 20s infinite ease-in-out;
+        }
+        
+        .shape-1 {
+            width: 300px;
+            height: 300px;
+            background: white;
+            top: -100px;
+            left: -100px;
+        }
+        
+        .shape-2 {
+            width: 200px;
+            height: 200px;
+            background: white;
+            bottom: -50px;
+            right: -50px;
+            animation-delay: 5s;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(40px, 40px); }
+        }
+        
+        .waiting-container {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            max-width: 550px;
+            padding: 20px;
+        }
+        
+        .waiting-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 60px 40px;
+            animation: slideUp 0.6s ease-out;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .mail-icon {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            color: white;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            margin-bottom: 30px;
+            animation: pulse 2s infinite;
+            position: relative;
+        }
+        
+        .mail-icon::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 3px solid #667eea;
+            animation: ripple 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        @keyframes ripple {
+            0% {
+                transform: scale(1);
+                opacity: 0.6;
+            }
+            100% {
+                transform: scale(1.4);
+                opacity: 0;
+            }
+        }
+        
+        .waiting-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 15px;
+        }
+        
+        .waiting-subtitle {
+            color: #6c757d;
+            font-size: 16px;
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        
+        .username-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            color: #1565c0;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin: 15px 0 25px 0;
+        }
+        
+        .instructions {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            text-align: left;
+        }
+        
+        .instruction-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        
+        .instruction-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .instruction-number {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        
+        .instruction-text {
+            color: #4a5568;
+            font-size: 14px;
+            line-height: 1.5;
+            padding-top: 3px;
+        }
+        
+        .spinner-wrapper {
+            margin: 30px 0;
+        }
+        
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(102, 126, 234, 0.2);
+            border-top: 5px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .status-text {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 15px;
+        }
+        
+        .progress-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        
+        .dot {
+            width: 10px;
+            height: 10px;
+            background: #667eea;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        
+        .dot:nth-child(1) { animation-delay: -0.32s; }
+        .dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes bounce {
+            0%, 80%, 100% { 
+                transform: scale(0);
+                opacity: 0.5;
+            }
+            40% { 
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .btn-cancel {
+            padding: 12px 30px;
+            font-size: 15px;
+            font-weight: 600;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: white;
+            color: #4a5568;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+        }
+        
+        .btn-cancel:hover {
+            background: #f7fafc;
+            border-color: #cbd5e0;
+            color: #2d3748;
+        }
+        
+        .success-message {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .alert-custom {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            color: #155724;
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-top: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-shape shape-1"></div>
+    <div class="bg-shape shape-2"></div>
+    
+    <div class="waiting-container">
+        <div class="waiting-card">
+            <div class="mail-icon">
+                <i class="bi bi-envelope-check-fill"></i>
+            </div>
+            
+            <h2 class="waiting-title">Activa tu Cuenta</h2>
+            <p class="waiting-subtitle">
+                Hola <span class="username-badge"><i class="bi bi-person-fill me-1"></i><span th:text="${username}"></span></span>
+            </p>
+            <p class="waiting-subtitle">
+                Tu cuenta aún no está activada. Por favor, sigue estos pasos:
+            </p>
+            
+            <div class="instructions">
+                <div class="instruction-item">
+                    <div class="instruction-number">1</div>
+                    <div class="instruction-text">
+                        Revisa tu correo electrónico (también en spam)
+                    </div>
+                </div>
+                <div class="instruction-item">
+                    <div class="instruction-number">2</div>
+                    <div class="instruction-text">
+                        Busca el correo de TaskFlow con el asunto "Activa tu cuenta"
+                    </div>
+                </div>
+                <div class="instruction-item">
+                    <div class="instruction-number">3</div>
+                    <div class="instruction-text">
+                        Haz clic en el botón "Activar Cuenta"
+                    </div>
+                </div>
+                <div class="instruction-item">
+                    <div class="instruction-number">4</div>
+                    <div class="instruction-text">
+                        Espera aquí, detectaremos la activación automáticamente
+                    </div>
+                </div>
+            </div>
+            
+            <div class="spinner-wrapper" id="spinner-wrapper">
+                <div class="spinner"></div>
+                <p class="status-text">Esperando activación...</p>
+                <div class="progress-dots">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+            </div>
+            
+            <div class="alert-custom" id="success-alert">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <strong>¡Cuenta Activada!</strong> Redirigiendo al dashboard...
+            </div>
+            
+            <a th:href="@{/auth/login}" class="btn-cancel">
+                <i class="bi bi-arrow-left me-2"></i>
+                Cancelar y volver
+            </a>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            let checkInterval;
+            let attemptCount = 0;
+            const maxAttempts = 120; // 2 minutos (120 * 1 segundo)
+            
+            // Iniciar polling cada 1 segundo
+            checkInterval = setInterval(function() {
+                checkActivationStatus();
+                attemptCount++;
+                
+                // Detener después de 2 minutos
+                if (attemptCount >= maxAttempts) {
+                    clearInterval(checkInterval);
+                    $('#spinner-wrapper').html(`
+                        <p class="text-muted">
+                            <i class="bi bi-clock-history me-2"></i>
+                            Tiempo de espera agotado. Por favor, intenta iniciar sesión nuevamente.
+                        </p>
+                    `);
+                }
+            }, 1000); // Cada 1 segundo
+            
+            function checkActivationStatus() {
+                $.ajax({
+                    url: '/auth/check-activation',
+                    method: 'GET',
+                    success: function(response) {
+                        if (response.activated) {
+                            // Cuenta activada!
+                            clearInterval(checkInterval);
+                            
+                            $('#spinner-wrapper').hide();
+                            $('#success-alert').show();
+                            
+                            // Redirigir al dashboard después de 1.5 segundos
+                            setTimeout(function() {
+                                window.location.href = '/dashboard';
+                            }, 1500);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.log('Verificando activación...');
+                    }
+                });
+            }
+            
+            // Limpiar intervalo al salir de la página
+            $(window).on('beforeunload', function() {
+                if (checkInterval) {
+                    clearInterval(checkInterval);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

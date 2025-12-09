@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificando Cuenta - TaskFlow</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .verify-container {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            max-width: 500px;
+            padding: 20px;
+        }
+        
+        .verify-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 60px 40px;
+            animation: slideUp 0.6s ease-out;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .spinner-container {
+            margin-bottom: 30px;
+        }
+        
+        .spinner {
+            width: 80px;
+            height: 80px;
+            border: 6px solid rgba(102, 126, 234, 0.2);
+            border-top: 6px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .status-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: white;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            margin-bottom: 20px;
+            animation: scaleIn 0.5s ease-out;
+        }
+        
+        .status-icon.success {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+        }
+        
+        .status-icon.error {
+            background: linear-gradient(135deg, #dc3545 0%, #ff6b6b 100%);
+        }
+        
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .verify-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 15px;
+        }
+        
+        .verify-message {
+            color: #6c757d;
+            font-size: 16px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .progress-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 25px;
+        }
+        
+        .dot {
+            width: 12px;
+            height: 12px;
+            background: #667eea;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        
+        .dot:nth-child(1) { animation-delay: -0.32s; }
+        .dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes bounce {
+            0%, 80%, 100% { 
+                transform: scale(0);
+                opacity: 0.5;
+            }
+            40% { 
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .btn-action {
+            padding: 12px 35px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+        }
+        
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="verify-container">
+        <div class="verify-card">
+            <!-- Estado: Verificando -->
+            <div id="verifying-state">
+                <div class="spinner-container">
+                    <div class="spinner"></div>
+                </div>
+                <h2 class="verify-title">Verificando tu cuenta...</h2>
+                <p class="verify-message">
+                    Por favor espera mientras validamos tu correo electrónico
+                </p>
+                <div class="progress-dots">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+            </div>
+            
+            <!-- Estado: Éxito -->
+            <div id="success-state" class="hidden">
+                <div class="status-icon success">
+                    <i class="bi bi-check-circle-fill"></i>
+                </div>
+                <h2 class="verify-title">¡Cuenta Verificada!</h2>
+                <p class="verify-message">
+                    Tu cuenta ha sido verificada exitosamente.<br>
+                    Redirigiendo al dashboard...
+                </p>
+            </div>
+            
+            <!-- Estado: Error -->
+            <div id="error-state" class="hidden">
+                <div class="status-icon error">
+                    <i class="bi bi-x-circle-fill"></i>
+                </div>
+                <h2 class="verify-title">Error de Verificación</h2>
+                <p class="verify-message" id="error-message">
+                    El token de verificación es inválido o ha expirado
+                </p>
+                <a th:href="@{/auth/login}" class="btn-action">
+                    <i class="bi bi-arrow-left me-2"></i>
+                    Volver al Login
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:inline="javascript">
+        $(document).ready(function() {
+            // Obtener el token de la URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+            
+            if (!token) {
+                showError('No se proporcionó un token de verificación');
+                return;
+            }
+            
+            // Guardar token en cookie
+            document.cookie = `verificationToken=${token}; path=/; max-age=300`; // 5 minutos
+            
+            // Llamar al endpoint de verificación
+            setTimeout(function() {
+                $.ajax({
+                    url: '/auth/verify-ajax',
+                    method: 'POST',
+                    data: { token: token },
+                    success: function(response) {
+                        if (response.success) {
+                            showSuccess();
+                            
+                            // Si el backend devuelve credenciales de auto-login
+                            if (response.username && response.token) {
+                                // Guardar en cookie
+                                document.cookie = `authToken=${response.token}; path=/; max-age=86400`; // 24 horas
+                                document.cookie = `username=${response.username}; path=/; max-age=86400`;
+                                
+                                // Redirigir al dashboard después de 2 segundos
+                                setTimeout(function() {
+                                    window.location.href = '/dashboard';
+                                }, 2000);
+                            } else {
+                                // Si no hay auto-login, redirigir al login
+                                setTimeout(function() {
+                                    window.location.href = '/auth/login';
+                                }, 2000);
+                            }
+                        } else {
+                            showError(response.message || 'Error al verificar la cuenta');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        let errorMessage = 'Error de conexión con el servidor';
+                        
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMessage = xhr.responseJSON.message;
+                        } else if (xhr.status === 400) {
+                            errorMessage = 'Token inválido o expirado';
+                        }
+                        
+                        showError(errorMessage);
+                    }
+                });
+            }, 1000); // Espera 1 segundo para mostrar el spinner
+            
+            function showSuccess() {
+                $('#verifying-state').addClass('hidden');
+                $('#error-state').addClass('hidden');
+                $('#success-state').removeClass('hidden');
+            }
+            
+            function showError(message) {
+                $('#verifying-state').addClass('hidden');
+                $('#success-state').addClass('hidden');
+                $('#error-message').text(message);
+                $('#error-state').removeClass('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
