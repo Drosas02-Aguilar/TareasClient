@@ -139,10 +139,6 @@
             font-size: 14px;
         }
         
-        .form-floating {
-            margin-bottom: 20px;
-        }
-        
         .form-label {
             font-weight: 600;
             color: #4a5568;
@@ -187,11 +183,17 @@
             color: white;
             transition: all 0.3s ease;
             box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+            position: relative;
         }
         
-        .btn-submit:hover {
+        .btn-submit:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
         
         .btn-cancel {
@@ -266,6 +268,12 @@
             margin: 0;
         }
         
+        .spinner-border-sm {
+            width: 1rem;
+            height: 1rem;
+            border-width: 0.15em;
+        }
+        
         @media (max-width: 576px) {
             .form-card {
                 padding: 30px 20px;
@@ -330,26 +338,17 @@
                     <div class="info-box">
                         <i class="bi bi-exclamation-triangle-fill"></i>
                         <p class="info-box-text">
-                            Ten cuidado al cambiar tu nombre de usuario o correo electrónico. Asegúrate de que la información sea correcta.
+                            Solo actualiza los campos que desees cambiar. Los demás permanecerán sin modificar.
                         </p>
                     </div>
                     
                     <!-- Alerts -->
-                    <div th:if="${success}" class="alert alert-success" role="alert">
-                        <i class="bi bi-check-circle-fill me-2"></i>
-                        <span th:text="${success}"></span>
-                    </div>
-                    
-                    <div th:if="${error}" class="alert alert-danger" role="alert">
-                        <i class="bi bi-exclamation-circle-fill me-2"></i>
-                        <span th:text="${error}"></span>
-                    </div>
+                    <div id="alertContainer"></div>
                     
                     <!-- Form -->
-                    <form th:action="@{/usuario/editar}" 
-                          method="post" 
-                          th:object="${usuario}"
-                          id="usuarioForm">
+                    <form id="usuarioForm">
+                        <input type="hidden" id="idUsuario" th:value="${idUsuario}">
+                        <input type="hidden" id="token" th:value="${session.token}">
                         
                         <div class="mb-3">
                             <label for="nombre" class="form-label">
@@ -358,11 +357,10 @@
                             <input type="text" 
                                    class="form-control" 
                                    id="nombre" 
-                                   th:field="*{nombre}"
-                                   placeholder="Ej: Juan Pérez"
-                                   required
+                                   th:value="${usuario.nombre}"
+                                   placeholder="Deja vacío para no cambiar"
                                    maxlength="100">
-                            <div class="form-text">Máximo 100 caracteres</div>
+                            <div class="form-text">Máximo 100 caracteres (opcional)</div>
                         </div>
                         
                         <div class="mb-3">
@@ -372,11 +370,10 @@
                             <input type="text" 
                                    class="form-control" 
                                    id="username" 
-                                   th:field="*{username}"
-                                   placeholder="Ej: juanperez123"
-                                   required
+                                   th:value="${usuario.username}"
+                                   placeholder="Deja vacío para no cambiar"
                                    maxlength="50">
-                            <div class="form-text">Nombre único de usuario</div>
+                            <div class="form-text">Nombre único de usuario (opcional)</div>
                         </div>
                         
                         <div class="mb-3">
@@ -386,16 +383,16 @@
                             <input type="email" 
                                    class="form-control" 
                                    id="email" 
-                                   th:field="*{email}"
-                                   placeholder="correo@ejemplo.com"
-                                   required>
-                            <div class="form-text">Correo electrónico válido</div>
+                                   th:value="${usuario.email}"
+                                   placeholder="Deja vacío para no cambiar">
+                            <div class="form-text">Correo electrónico válido (opcional)</div>
                         </div>
                         
                         <div class="btn-group-custom">
-                            <button type="submit" class="btn-submit">
+                            <button type="submit" class="btn-submit" id="btnSubmit">
                                 <i class="bi bi-check-circle me-2"></i>
-                                Actualizar Perfil
+                                <span id="btnText">Actualizar Perfil</span>
+                                <span id="btnSpinner" class="spinner-border spinner-border-sm ms-2" style="display: none;"></span>
                             </button>
                             <a th:href="@{/usuario/perfil}" class="btn-cancel">
                                 <i class="bi bi-x-circle me-2"></i>
@@ -410,79 +407,184 @@
     
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
+    <script th:inline="javascript">
         $(document).ready(function() {
+            const idUsuario = $('#idUsuario').val();
+            const token = $('#token').val();
+            
+            // Función para mostrar alertas
+            function showAlert(message, type) {
+                const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+                const iconClass = type === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-circle-fill';
+                
+                const alertHtml = `
+                    <div class="alert ${alertClass}" role="alert">
+                        <i class="${iconClass} me-2"></i>
+                        <span>${message}</span>
+                    </div>
+                `;
+                
+                $('#alertContainer').html(alertHtml);
+                
+                // Auto-hide después de 5 segundos
+                setTimeout(function() {
+                    $('.alert').fadeOut('slow', function() {
+                        $(this).remove();
+                    });
+                }, 5000);
+                
+                // Scroll al alert
+                $('html, body').animate({
+                    scrollTop: $('#alertContainer').offset().top - 100
+                }, 500);
+            }
+            
             // Validación en tiempo real para nombre
             $('#nombre').on('input', function() {
                 const length = $(this).val().length;
                 const maxLength = 100;
-                $(this).siblings('.form-text').text(`${length}/${maxLength} caracteres`);
-                
-                if (length > 0) {
-                    $(this).addClass('is-valid').removeClass('is-invalid');
-                }
+                $(this).siblings('.form-text').text(`${length}/${maxLength} caracteres (opcional)`);
             });
             
             // Validación en tiempo real para username
             $('#username').on('input', function() {
-                const length = $(this).val().length;
                 const value = $(this).val().trim();
                 
-                if (length > 0 && value.length >= 3) {
-                    $(this).addClass('is-valid').removeClass('is-invalid');
-                } else if (length > 0) {
+                if (value.length > 0 && value.length < 3) {
                     $(this).addClass('is-invalid').removeClass('is-valid');
+                    $(this).siblings('.form-text').text('Mínimo 3 caracteres');
+                } else if (value.length >= 3) {
+                    $(this).addClass('is-valid').removeClass('is-invalid');
+                    $(this).siblings('.form-text').text('Nombre único de usuario (opcional)');
+                } else {
+                    $(this).removeClass('is-invalid is-valid');
+                    $(this).siblings('.form-text').text('Nombre único de usuario (opcional)');
                 }
             });
             
             // Validación en tiempo real para email
             $('#email').on('input', function() {
-                const email = $(this).val();
+                const email = $(this).val().trim();
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 
-                if (emailRegex.test(email)) {
-                    $(this).addClass('is-valid').removeClass('is-invalid');
-                } else if (email.length > 0) {
+                if (email.length > 0 && !emailRegex.test(email)) {
                     $(this).addClass('is-invalid').removeClass('is-valid');
+                    $(this).siblings('.form-text').text('Email inválido');
+                } else if (email.length > 0 && emailRegex.test(email)) {
+                    $(this).addClass('is-valid').removeClass('is-invalid');
+                    $(this).siblings('.form-text').text('Correo electrónico válido (opcional)');
+                } else {
+                    $(this).removeClass('is-invalid is-valid');
+                    $(this).siblings('.form-text').text('Correo electrónico válido (opcional)');
                 }
             });
             
-            // Validación del formulario
+            // Submit del formulario con AJAX
             $('#usuarioForm').on('submit', function(e) {
+                e.preventDefault();
+                
+                // Validar campos
                 let isValid = true;
+                const username = $('#username').val().trim();
+                const email = $('#email').val().trim();
                 
-                // Validar nombre
-                if ($('#nombre').val().trim() === '') {
-                    $('#nombre').addClass('is-invalid');
-                    isValid = false;
-                }
-                
-                // Validar username
-                if ($('#username').val().trim().length < 3) {
+                // Validar username si no está vacío
+                if (username.length > 0 && username.length < 3) {
                     $('#username').addClass('is-invalid');
                     isValid = false;
                 }
                 
-                // Validar email
-                const email = $('#email').val();
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (!emailRegex.test(email)) {
-                    $('#email').addClass('is-invalid');
-                    isValid = false;
+                // Validar email si no está vacío
+                if (email.length > 0) {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(email)) {
+                        $('#email').addClass('is-invalid');
+                        isValid = false;
+                    }
                 }
                 
                 if (!isValid) {
-                    e.preventDefault();
-                    $('html, body').animate({
-                        scrollTop: $('.is-invalid:first').offset().top - 100
-                    }, 500);
+                    showAlert('Por favor corrige los errores en el formulario', 'error');
+                    return;
                 }
+                
+                // Construir objeto con solo los campos que tienen valor
+                const cambios = {};
+                
+                const nombre = $('#nombre').val().trim();
+                if (nombre.length > 0) {
+                    cambios.nombre = nombre;
+                }
+                
+                if (username.length > 0) {
+                    cambios.username = username;
+                }
+                
+                if (email.length > 0) {
+                    cambios.email = email;
+                }
+                
+                // Verificar que al menos un campo tenga valor
+                if (Object.keys(cambios).length === 0) {
+                    showAlert('Debes modificar al menos un campo', 'error');
+                    return;
+                }
+                
+                // Deshabilitar botón y mostrar spinner
+                $('#btnSubmit').prop('disabled', true);
+                $('#btnText').text('Actualizando...');
+                $('#btnSpinner').show();
+                
+                // Hacer petición AJAX
+                $.ajax({
+                    url: `http://localhost:8080/api/usuario/actualizar/${idUsuario}`,
+                    type: 'PATCH',
+                    contentType: 'application/json',
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    },
+                    data: JSON.stringify(cambios),
+                    success: function(response) {
+                        if (response.status === 200) {
+                            showAlert('Usuario actualizado exitosamente', 'success');
+                            
+                            // Si se actualizó el username, actualizar la sesión
+                            if (cambios.username) {
+                                $('.user-badge span').text(cambios.username);
+                            }
+                            
+                            // Redirigir al perfil después de 2 segundos
+                            setTimeout(function() {
+                                window.location.href = '/usuario/perfil';
+                            }, 2000);
+                        } else {
+                            showAlert(response.errorMessage || 'Error al actualizar usuario', 'error');
+                            $('#btnSubmit').prop('disabled', false);
+                            $('#btnText').text('Actualizar Perfil');
+                            $('#btnSpinner').hide();
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        let errorMessage = 'Error al actualizar usuario';
+                        
+                        if (xhr.responseJSON && xhr.responseJSON.errorMessage) {
+                            errorMessage = xhr.responseJSON.errorMessage;
+                        } else if (xhr.status === 400) {
+                            errorMessage = 'Datos inválidos. Verifica que el username o email no estén en uso';
+                        } else if (xhr.status === 404) {
+                            errorMessage = 'Usuario no encontrado';
+                        } else if (xhr.status === 403) {
+                            errorMessage = 'No tienes permisos para realizar esta acción';
+                        }
+                        
+                        showAlert(errorMessage, 'error');
+                        
+                        $('#btnSubmit').prop('disabled', false);
+                        $('#btnText').text('Actualizar Perfil');
+                        $('#btnSpinner').hide();
+                    }
+                });
             });
-            
-            // Auto-hide alerts
-            setTimeout(function() {
-                $('.alert').fadeOut('slow');
-            }, 5000);
         });
     </script>
 </body>
