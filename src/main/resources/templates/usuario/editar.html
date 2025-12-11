@@ -160,6 +160,13 @@
             box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
         }
         
+        .form-control:disabled {
+            background: #e9ecef;
+            color: #6c757d;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        
         .form-text {
             font-size: 13px;
             color: #6c757d;
@@ -266,6 +273,19 @@
             color: #e65100;
             font-size: 14px;
             margin: 0;
+        }
+        
+        .locked-field {
+            position: relative;
+        }
+        
+        .locked-field .lock-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            font-size: 18px;
         }
         
         .spinner-border-sm {
@@ -376,7 +396,7 @@
                             <div class="form-text">Nombre único de usuario (opcional)</div>
                         </div>
                         
-                        <div class="mb-3">
+                        <div class="mb-3 locked-field">
                             <label for="email" class="form-label">
                                 <i class="bi bi-envelope me-2"></i>Correo Electrónico
                             </label>
@@ -384,8 +404,12 @@
                                    class="form-control" 
                                    id="email" 
                                    th:value="${usuario.email}"
-                                   placeholder="Deja vacío para no cambiar">
-                            <div class="form-text">Correo electrónico válido (opcional)</div>
+                                   disabled>
+                            <i class="bi bi-lock-fill lock-icon"></i>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle me-1"></i>
+                                El correo electrónico no se puede modificar por seguridad
+                            </div>
                         </div>
                         
                         <div class="btn-group-custom">
@@ -462,23 +486,6 @@
                 }
             });
             
-            // Validación en tiempo real para email
-            $('#email').on('input', function() {
-                const email = $(this).val().trim();
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                
-                if (email.length > 0 && !emailRegex.test(email)) {
-                    $(this).addClass('is-invalid').removeClass('is-valid');
-                    $(this).siblings('.form-text').text('Email inválido');
-                } else if (email.length > 0 && emailRegex.test(email)) {
-                    $(this).addClass('is-valid').removeClass('is-invalid');
-                    $(this).siblings('.form-text').text('Correo electrónico válido (opcional)');
-                } else {
-                    $(this).removeClass('is-invalid is-valid');
-                    $(this).siblings('.form-text').text('Correo electrónico válido (opcional)');
-                }
-            });
-            
             // Submit del formulario con AJAX
             $('#usuarioForm').on('submit', function(e) {
                 e.preventDefault();
@@ -486,7 +493,6 @@
                 // Validar campos
                 let isValid = true;
                 const username = $('#username').val().trim();
-                const email = $('#email').val().trim();
                 
                 // Validar username si no está vacío
                 if (username.length > 0 && username.length < 3) {
@@ -494,21 +500,12 @@
                     isValid = false;
                 }
                 
-                // Validar email si no está vacío
-                if (email.length > 0) {
-                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                    if (!emailRegex.test(email)) {
-                        $('#email').addClass('is-invalid');
-                        isValid = false;
-                    }
-                }
-                
                 if (!isValid) {
                     showAlert('Por favor corrige los errores en el formulario', 'error');
                     return;
                 }
                 
-                // Construir objeto con solo los campos que tienen valor
+                // Construir objeto con solo los campos que tienen valor (sin email)
                 const cambios = {};
                 
                 const nombre = $('#nombre').val().trim();
@@ -518,10 +515,6 @@
                 
                 if (username.length > 0) {
                     cambios.username = username;
-                }
-                
-                if (email.length > 0) {
-                    cambios.email = email;
                 }
                 
                 // Verificar que al menos un campo tenga valor
@@ -570,7 +563,7 @@
                         if (xhr.responseJSON && xhr.responseJSON.errorMessage) {
                             errorMessage = xhr.responseJSON.errorMessage;
                         } else if (xhr.status === 400) {
-                            errorMessage = 'Datos inválidos. Verifica que el username o email no estén en uso';
+                            errorMessage = 'Datos inválidos. Verifica que el username no esté en uso';
                         } else if (xhr.status === 404) {
                             errorMessage = 'Usuario no encontrado';
                         } else if (xhr.status === 403) {

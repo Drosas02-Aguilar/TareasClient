@@ -155,22 +155,36 @@ public class AuthController {
                 model.addAttribute("username", data.get("username"));
                 return "dashboard";
             } else {
-                model.addAttribute("error", 
-                    result != null ? result.errorMessage : "Error al iniciar sesión");
+            model.addAttribute("error", 
+                result != null ? result.errorMessage : "Error al iniciar sesión");
+        }
+           
+    } catch (org.springframework.web.client.HttpClientErrorException ex) {
+        String errorBody = ex.getResponseBodyAsString();
+        
+        if (errorBody != null && !errorBody.isEmpty() && errorBody.contains("\"errorMessage\"")) {
+            try {
+                int start = errorBody.indexOf("\"errorMessage\":\"") + 16;
+                int end = errorBody.indexOf("\"", start);
+                String mensaje = errorBody.substring(start, end);
+                model.addAttribute("warning", mensaje);
+            } catch (Exception parseEx) {
+                model.addAttribute("warning", "Debes verificar tu correo para validar tu cuenta");
             }
-               
-        } catch (Exception ex) {
-            result.status = 500;
-            result.ex = ex;
-            result.errorMessage = "Error de conexión con el servidor";
-            result.correct = false;
-            
-            model.addAttribute("error", result.errorMessage);
+        } else {
+            model.addAttribute("warning", "Debes verificar tu correo para validar tu cuenta");
         }
         
-        model.addAttribute("usuario", usuario);
-        return "login";
+    } catch (org.springframework.web.client.HttpServerErrorException ex) {
+        model.addAttribute("error", "Error en el servidor. Intenta de nuevo más tarde.");
+        
+    } catch (Exception ex) {
+        model.addAttribute("error", "Error de conexión con el servidor");
     }
+    
+    model.addAttribute("usuario", usuario);
+    return "login";
+}
 
     // ==================== OLVIDÉ MI CONTRASEÑA ====================
     

@@ -1,12 +1,15 @@
 package com.tareasCliente.views.ML;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDate;
+import org.springframework.format.annotation.DateTimeFormat;
 
 public class Tarea {
     
     private int idTarea;
     private String titulo;
     private String descripcion;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate fechafin;
     private EstadoTarea estado;
     private Usuario usuario;

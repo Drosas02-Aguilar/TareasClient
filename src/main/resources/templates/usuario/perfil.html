@@ -216,6 +216,7 @@
         
         .action-buttons {
             display: flex;
+            flex-wrap: wrap;
             gap: 15px;
             justify-content: center;
             padding-top: 20px;
@@ -255,6 +256,17 @@
         
         .btn-edit-detail:hover {
             background: #667eea;
+            color: white;
+        }
+        
+        .btn-password {
+            background: white;
+            color: #f59e0b;
+            border: 2px solid #f59e0b;
+        }
+        
+        .btn-password:hover {
+            background: #f59e0b;
             color: white;
         }
         
@@ -313,7 +325,7 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container-fluid px-4">
-            <a class="navbar-brand" th:href="@{/dashboard}">
+            <a class="navbar-brand" th:href="@{/tareas}">
                 <div class="brand-icon">
                     <i class="bi bi-check2-circle"></i>
                 </div>
@@ -376,14 +388,6 @@
                     <!-- Info Cards -->
                     <div class="detail-info">
                         <div class="info-item">
-                            <div class="info-icon icon-id">
-                                <i class="bi bi-hash"></i>
-                            </div>
-                            <p class="info-label">ID de Usuario</p>
-                            <p class="info-value" th:text="${usuario.idUsuario}">123</p>
-                        </div>
-                        
-                        <div class="info-item">
                             <div class="info-icon icon-username">
                                 <i class="bi bi-person-badge"></i>
                             </div>
@@ -410,14 +414,19 @@
                     
                     <!-- Action Buttons -->
                     <div class="action-buttons">
-                        <a th:href="@{/dashboard}" class="btn-action-detail btn-back">
+<!--                        <a th:href="@{/dashboard}" class="btn-action-detail btn-back">
                             <i class="bi bi-arrow-left"></i>
                             Volver al Dashboard
-                        </a>
+                        </a>-->
                         
                         <a th:href="@{/usuario/editar}" class="btn-action-detail btn-edit-detail">
                             <i class="bi bi-pencil"></i>
                             Editar Perfil
+                        </a>
+                        
+                        <a th:href="@{/auth/change-password}" class="btn-action-detail btn-password">
+                            <i class="bi bi-key"></i>
+                            Cambiar Contraseña
                         </a>
                         
                         <form th:action="@{/usuario/eliminar}" 

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!--<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
@@ -385,7 +385,7 @@
     </style>
 </head>
 <body>
-    <!-- Navbar -->
+     Navbar 
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container-fluid px-4">
             <a class="navbar-brand" th:href="@{/dashboard}">
@@ -420,18 +420,18 @@
         </div>
     </nav>
 
-    <!-- Main Content -->
+     Main Content 
     <div class="main-content">
         <div class="container">
             <div class="detail-container">
                 <div class="detail-card">
-                    <!-- Alert -->
+                     Alert 
                     <div th:if="${error}" class="alert alert-danger" role="alert">
                         <i class="bi bi-exclamation-circle-fill me-2"></i>
                         <span th:text="${error}"></span>
                     </div>
                     
-                    <!-- Header -->
+                     Header 
                     <div class="detail-header">
                         <div class="detail-title-section">
                             <h1 class="detail-title" th:text="${tarea.titulo}">Título de la tarea</h1>
@@ -444,7 +444,7 @@
                         </span>
                     </div>
                     
-                    <!-- Info Cards -->
+                     Info Cards 
                     <div class="detail-info">
                         <div class="info-item">
                             <div class="info-icon icon-id">
@@ -471,7 +471,7 @@
                         </div>
                     </div>
                     
-                    <!-- Description Section -->
+                     Description Section 
                     <div class="description-section">
                         <h3 class="section-title">
                             <i class="bi bi-text-paragraph"></i>
@@ -482,7 +482,7 @@
                         </p>
                     </div>
                     
-                    <!-- Timeline (opcional) -->
+                     Timeline (opcional) 
                     <div class="description-section">
                         <h3 class="section-title">
                             <i class="bi bi-clock-history"></i>
@@ -523,7 +523,7 @@
                         </div>
                     </div>
                     
-                    <!-- Action Buttons -->
+                     Action Buttons 
                     <div class="action-buttons">
                         <a th:href="@{/tareas}" class="btn-action-detail btn-back">
                             <i class="bi bi-arrow-left"></i>
@@ -567,4 +567,4 @@
         });
     </script>
 </body>
-</html>
+</html>-->
