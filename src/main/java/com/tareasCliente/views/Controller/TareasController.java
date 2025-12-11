@@ -63,17 +63,14 @@ public class TareasController {
             }
 
         } catch (HttpClientErrorException ex) {
-            // Si es 404, significa que no hay tareas (no es un error)
             if (ex.getStatusCode().value() == 404) {
                 model.addAttribute("tareas", List.of());
             } else {
-                // Otros errores 4xx
                 model.addAttribute("error", "Error al cargar las tareas");
                 model.addAttribute("tareas", List.of());
             }
             
         } catch (Exception ex) {
-            // Errores de conexión u otros
             model.addAttribute("error", "Error de conexión con el servidor");
             model.addAttribute("tareas", List.of());
         }

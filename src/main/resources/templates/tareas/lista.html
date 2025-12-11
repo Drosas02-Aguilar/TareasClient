@@ -126,6 +126,63 @@
                 color: white;
             }
 
+            /* Filtros Container */
+            .filters-container {
+                background: white;
+                border-radius: 15px;
+                padding: 25px;
+                box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+                animation: slideUp 0.5s ease-out;
+            }
+
+            .filter-label {
+                font-size: 13px;
+                font-weight: 600;
+                color: #6c757d;
+                margin-bottom: 8px;
+                display: block;
+            }
+
+            .filter-select, .filter-input {
+                border: 2px solid #e9ecef;
+                border-radius: 10px;
+                padding: 10px 15px;
+                font-size: 14px;
+                transition: all 0.3s ease;
+                background: #f8f9fa;
+            }
+
+            .filter-select:focus, .filter-input:focus {
+                border-color: #667eea;
+                box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+                background: white;
+            }
+
+            .btn-limpiar {
+                background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+                color: white;
+                border: none;
+                border-radius: 10px;
+                padding: 10px 20px;
+                font-weight: 600;
+                transition: all 0.3s ease;
+            }
+
+            .btn-limpiar:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 20px rgba(245, 87, 108, 0.3);
+                color: white;
+            }
+
+            .results-counter {
+                padding: 10px 15px;
+                background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+                border-radius: 10px;
+                font-size: 14px;
+                color: #1565c0;
+                display: inline-block;
+            }
+
             /* Stats Cards */
             .stats-container {
                 display: grid;
@@ -141,11 +198,17 @@
                 box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
                 transition: all 0.3s ease;
                 animation: slideUp 0.6s ease-out;
+                cursor: pointer;
             }
 
             .stat-card:hover {
                 transform: translateY(-5px);
                 box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            }
+
+            .stat-card.active {
+                border: 2px solid #667eea;
+                box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
             }
 
             @keyframes slideUp {
@@ -179,6 +242,10 @@
                 background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             }
 
+            .stat-icon.iniciada {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            }
+
             .stat-icon.completed {
                 background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
             }
@@ -206,6 +273,14 @@
                 transition: all 0.3s ease;
                 animation: slideUp 0.6s ease-out;
                 opacity: 0;
+            }
+
+            .task-card.visible {
+                opacity: 1;
+            }
+
+            .task-card.hidden {
+                display: none !important;
             }
 
             .task-card:hover {
@@ -390,6 +465,37 @@
                 margin-bottom: 30px;
             }
 
+            /* No Results State */
+            .no-results-state {
+                text-align: center;
+                padding: 40px 20px;
+                background: white;
+                border-radius: 15px;
+                box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+                display: none;
+            }
+
+            .no-results-state.visible {
+                display: block;
+            }
+
+            .no-results-icon {
+                font-size: 60px;
+                color: #e9ecef;
+                margin-bottom: 15px;
+            }
+
+            .no-results-title {
+                font-size: 20px;
+                font-weight: 600;
+                color: #2d3748;
+                margin-bottom: 10px;
+            }
+
+            .no-results-text {
+                color: #6c757d;
+            }
+
             /* Toast Notifications */
             .toast {
                 min-width: 300px;
@@ -493,6 +599,10 @@
                     gap: 10px;
                     align-items: flex-start;
                 }
+
+                .filters-container .row {
+                    gap: 15px;
+                }
             }
         </style>
     </head>
@@ -544,9 +654,68 @@
                     </div>
                 </div>
 
+                <!-- Filtros y Ordenamiento -->
+                <div class="filters-container mb-4">
+                    <div class="row g-3 align-items-end">
+                        <!-- Filtro por Estado -->
+                        <div class="col-md-3 col-sm-6">
+                            <label class="filter-label">
+                                <i class="bi bi-funnel me-1"></i> Filtrar por Estado
+                            </label>
+                            <select id="filtro-estado" class="form-select filter-select">
+                                <option value="TODOS">Todos los estados</option>
+                                <option value="PENDIENTE">Pendiente</option>
+                                <option value="INICIADA">Iniciada</option>
+                                <option value="COMPLETADA">Completada</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Ordenar por -->
+                        <div class="col-md-3 col-sm-6">
+                            <label class="filter-label">
+                                <i class="bi bi-sort-down me-1"></i> Ordenar por
+                            </label>
+                            <select id="ordenar-por" class="form-select filter-select">
+                                <option value="fecha-desc">Fecha (más reciente)</option>
+                                <option value="fecha-asc">Fecha (más antigua)</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Rango de Fechas -->
+                        <div class="col-md-2 col-sm-6">
+                            <label class="filter-label">
+                                <i class="bi bi-calendar me-1"></i> Desde
+                            </label>
+                            <input type="date" id="fecha-desde" class="form-control filter-input">
+                        </div>
+                        
+                        <div class="col-md-2 col-sm-6">
+                            <label class="filter-label">
+                                <i class="bi bi-calendar me-1"></i> Hasta
+                            </label>
+                            <input type="date" id="fecha-hasta" class="form-control filter-input">
+                        </div>
+                        
+                        <!-- Botón Limpiar -->
+                        <div class="col-md-2 col-sm-12">
+                            <button type="button" id="btn-limpiar-filtros" class="btn btn-limpiar w-100">
+                                <i class="bi bi-x-circle me-1"></i> Limpiar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Contador de resultados -->
+                    <div class="results-counter mt-3">
+                        <span id="contador-resultados">
+                            <i class="bi bi-list-ul me-1"></i>
+                            Mostrando <strong id="num-mostradas">0</strong> de <strong id="num-total">0</strong> tareas
+                        </span>
+                    </div>
+                </div>
+
                 <!-- Stats -->
                 <div class="stats-container">
-                    <div class="stat-card">
+                    <div class="stat-card" data-filter="TODOS" id="stat-total">
                         <div class="stat-icon total">
                             <i class="bi bi-list-task"></i>
                         </div>
@@ -554,7 +723,7 @@
                         <p class="stat-label">Total de Tareas</p>
                     </div>
 
-                    <div class="stat-card">
+                    <div class="stat-card" data-filter="PENDIENTE" id="stat-pendiente-card">
                         <div class="stat-icon pending">
                             <i class="bi bi-clock-history"></i>
                         </div>
@@ -562,7 +731,15 @@
                         <p class="stat-label">Pendientes</p>
                     </div>
 
-                    <div class="stat-card">
+                    <div class="stat-card" data-filter="INICIADA" id="stat-iniciada-card">
+                        <div class="stat-icon iniciada">
+                            <i class="bi bi-hourglass-split"></i>
+                        </div>
+                        <h3 class="stat-value" id="stat-iniciada">0</h3>
+                        <p class="stat-label">Iniciadas</p>
+                    </div>
+
+                    <div class="stat-card" data-filter="COMPLETADA" id="stat-completada-card">
                         <div class="stat-icon completed">
                             <i class="bi bi-check-circle"></i>
                         </div>
@@ -571,107 +748,127 @@
                     </div>
                 </div>
 
-                <!-- Tasks List -->
-                <div th:if="${tareas != null and !tareas.isEmpty()}">
-                    <div th:each="tarea, iterStat : ${tareas}" class="task-card" th:data-index="${iterStat.index}">
-                        <div class="task-header">
-                            <div>
-                                <h3 class="task-title" th:text="${tarea.titulo}">Título de la tarea</h3>
-                                <p class="task-description" th:text="${tarea.descripcion}">Descripción</p>
+                <!-- Tasks Container -->
+                <div id="tasks-container">
+                    <!-- Tasks List -->
+                    <div th:if="${tareas != null and !tareas.isEmpty()}" id="tasks-list">
+                        <div th:each="tarea, iterStat : ${tareas}" 
+                             class="task-card" 
+                             th:data-index="${iterStat.index}"
+                             th:data-estado="${tarea.estado}"
+                             th:data-fecha="${tarea.fechafin}"
+                             th:data-titulo="${tarea.titulo}">
+                            <div class="task-header">
+                                <div>
+                                    <h3 class="task-title" th:text="${tarea.titulo}">Título de la tarea</h3>
+                                    <p class="task-description" th:text="${tarea.descripcion}">Descripción</p>
+                                </div>
+                                
+                                <!-- Dropdown para cambiar estado -->
+                                <div class="dropdown">
+                                    <span class="task-badge dropdown-toggle" 
+                                          th:classappend="${tarea.estado.toString() == 'INICIADA'} ? 'badge-iniciada' : 
+                                          (${tarea.estado.toString() == 'PENDIENTE'} ? 'badge-pendiente' : 'badge-completada')"
+                                          data-bs-toggle="dropdown"
+                                          aria-expanded="false"
+                                          th:data-id="${tarea.idTarea}"
+                                          th:attr="data-estado-actual=${tarea.estado}">
+                                        <span th:text="${tarea.estado}">Estado</span>
+                                    </span>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li>
+                                            <a class="dropdown-item cambiar-estado" 
+                                               href="#"
+                                               th:data-id="${tarea.idTarea}"
+                                               data-estado="PENDIENTE">
+                                                <i class="bi bi-clock me-2" style="color: #e65100;"></i>
+                                                PENDIENTE
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item cambiar-estado" 
+                                               href="#"
+                                               th:data-id="${tarea.idTarea}"
+                                               data-estado="INICIADA">
+                                                <i class="bi bi-hourglass-split me-2" style="color: #1565c0;"></i>
+                                                INICIADA
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item cambiar-estado" 
+                                               href="#"
+                                               th:data-id="${tarea.idTarea}"
+                                               data-estado="COMPLETADA">
+                                                <i class="bi bi-check-circle me-2" style="color: #2e7d32;"></i>
+                                                COMPLETADA
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
                             </div>
-                            
-                            <!-- Dropdown para cambiar estado -->
-                            <div class="dropdown">
-                                <span class="task-badge dropdown-toggle" 
-                                      th:classappend="${tarea.estado.toString() == 'INICIADA'} ? 'badge-iniciada' : 
-                                      (${tarea.estado.toString() == 'PENDIENTE'} ? 'badge-pendiente' : 'badge-completada')"
-                                      data-bs-toggle="dropdown"
-                                      aria-expanded="false"
-                                      th:data-id="${tarea.idTarea}"
-                                      th:attr="data-estado-actual=${tarea.estado}">
-                                    <span th:text="${tarea.estado}">Estado</span>
-                                </span>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li>
-                                        <a class="dropdown-item cambiar-estado" 
-                                           href="#"
-                                           th:data-id="${tarea.idTarea}"
-                                           data-estado="PENDIENTE">
-                                            <i class="bi bi-clock me-2" style="color: #e65100;"></i>
-                                            PENDIENTE
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item cambiar-estado" 
-                                           href="#"
-                                           th:data-id="${tarea.idTarea}"
-                                           data-estado="INICIADA">
-                                            <i class="bi bi-hourglass-split me-2" style="color: #1565c0;"></i>
-                                            INICIADA
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item cambiar-estado" 
-                                           href="#"
-                                           th:data-id="${tarea.idTarea}"
-                                           data-estado="COMPLETADA">
-                                            <i class="bi bi-check-circle me-2" style="color: #2e7d32;"></i>
-                                            COMPLETADA
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
 
-                        <div class="task-footer">
-                            <div class="task-date">
-                                <i class="bi bi-calendar-event"></i>
-                                <span th:text="${tarea.fechafin}">Fecha</span>
-                            </div>
+                            <div class="task-footer">
+                                <div class="task-date">
+                                    <i class="bi bi-calendar-event"></i>
+                                    <span th:text="${tarea.fechafin}">Fecha</span>
+                                </div>
 
-                            <div class="task-actions">
-                                <button type="button" 
-                                        class="btn-action btn-view btn-ver-detalle" 
-                                        th:data-id="${tarea.idTarea}"
-                                        th:data-titulo="${tarea.titulo}"
-                                        th:data-descripcion="${tarea.descripcion}"
-                                        th:data-estado="${tarea.estado}"
-                                        th:data-fecha="${tarea.fechafin}"
-                                        title="Ver detalle">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                                <a th:href="@{/tareas/editar/{id}(id=${tarea.idTarea})}" 
-                                   class="btn-action btn-edit" 
-                                   title="Editar">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                <form th:action="@{/tareas/eliminar/{id}(id=${tarea.idTarea})}" 
-                                      method="post" 
-                                      style="display: inline;"
-                                      class="delete-form">
-                                    <button type="submit" 
-                                            class="btn-action btn-delete" 
-                                            title="Eliminar"
-                                            onclick="return confirm('¿Estás seguro de eliminar esta tarea?')">
-                                        <i class="bi bi-trash"></i>
+                                <div class="task-actions">
+                                    <button type="button" 
+                                            class="btn-action btn-view btn-ver-detalle" 
+                                            th:data-id="${tarea.idTarea}"
+                                            th:data-titulo="${tarea.titulo}"
+                                            th:data-descripcion="${tarea.descripcion}"
+                                            th:data-estado="${tarea.estado}"
+                                            th:data-fecha="${tarea.fechafin}"
+                                            title="Ver detalle">
+                                        <i class="bi bi-eye"></i>
                                     </button>
-                                </form>
+                                    <a th:href="@{/tareas/editar/{id}(id=${tarea.idTarea})}" 
+                                       class="btn-action btn-edit" 
+                                       title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <form th:action="@{/tareas/eliminar/{id}(id=${tarea.idTarea})}" 
+                                          method="post" 
+                                          style="display: inline;"
+                                          class="delete-form">
+                                        <button type="submit" 
+                                                class="btn-action btn-delete" 
+                                                title="Eliminar"
+                                                onclick="return confirm('¿Estás seguro de eliminar esta tarea?')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Empty State -->
-                <div th:if="${tareas == null or tareas.isEmpty()}" class="empty-state">
-                    <div class="empty-icon">
-                        <i class="bi bi-clipboard-x"></i>
+                    <!--  filtros sin resultado -->
+                    <div class="no-results-state" id="no-results">
+                        <div class="no-results-icon">
+                            <i class="bi bi-search"></i>
+                        </div>
+                        <h2 class="no-results-title">Sin resultados</h2>
+                        <p class="no-results-text">No se encontraron tareas con los filtros aplicados</p>
+                        <button type="button" class="btn btn-limpiar mt-3" id="btn-limpiar-desde-empty">
+                            <i class="bi bi-x-circle me-1"></i> Limpiar filtros
+                        </button>
                     </div>
-                    <h2 class="empty-title">No tienes tareas</h2>
-                    <p class="empty-text">Comienza creando tu primera tarea y organiza tu día</p>
-                    <a th:href="@{/tareas/nueva}" class="btn-new-task">
-                        <i class="bi bi-plus-circle"></i>
-                        Crear Primera Tarea
-                    </a>
+
+                    <!-- Empty State -->
+                    <div th:if="${tareas == null or tareas.isEmpty()}" class="empty-state">
+                        <div class="empty-icon">
+                            <i class="bi bi-clipboard-x"></i>
+                        </div>
+                        <h2 class="empty-title">No tienes tareas</h2>
+                        <p class="empty-text">Comienza creando tu primera tarea y organiza tu día</p>
+                        <a th:href="@{/tareas/nueva}" class="btn-new-task">
+                            <i class="bi bi-plus-circle"></i>
+                            Crear Primera Tarea
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -806,7 +1003,6 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         <script th:inline="javascript">
             $(document).ready(function () {
-                // Función para mostrar toast
                 function showToast(message, type = 'success') {
                     const toast = $('#successToast');
                     const toastBody = toast.find('.toast-body');
@@ -847,26 +1043,193 @@
                 
                 $('.task-card').each(function (index) {
                     $(this).delay(index * 100).animate({'opacity': '1'}, 400);
+                    $(this).addClass('visible');
                 });
 
+                // FILTRADO Y ORDENAMIENTO
+
+                function parseFecha(fechaStr) {
+                    if (!fechaStr) return null;
+                    
+                    if (fechaStr.includes('/')) {
+                        const parts = fechaStr.split('/');
+                        if (parts.length === 3) {
+                            return new Date(parts[2], parts[1] - 1, parts[0]);
+                        }
+                    }
+                    if (fechaStr.includes('-')) {
+                        return new Date(fechaStr);
+                    }
+                    return null;
+                }
+
+                // Función para obtener el orden del estado
+                function getEstadoOrden(estado) {
+                    const orden = {
+                        'PENDIENTE': 1,
+                        'INICIADA': 2,
+                        'COMPLETADA': 3
+                    };
+                    return orden[estado] || 99;
+                }
+
+                function aplicarFiltrosYOrden() {
+                    const filtroEstado = $('#filtro-estado').val();
+                    const ordenarPor = $('#ordenar-por').val();
+                    const fechaDesde = $('#fecha-desde').val();
+                    const fechaHasta = $('#fecha-hasta').val();
+
+                    const fechaDesdeDate = fechaDesde ? new Date(fechaDesde) : null;
+                    const fechaHastaDate = fechaHasta ? new Date(fechaHasta + 'T23:59:59') : null;
+
+                    let tareasVisibles = [];
+                    let totalTareas = 0;
+
+                    // Filtrar tareas
+                    $('.task-card').each(function() {
+                        const card = $(this);
+                        const estado = card.find('.task-badge span').text().trim();
+                        const fechaStr = card.data('fecha');
+                        const fecha = parseFecha(fechaStr);
+                        
+                        totalTareas++;
+                        let mostrar = true;
+
+                        // Filtro por estado
+                        if (filtroEstado !== 'TODOS' && estado !== filtroEstado) {
+                            mostrar = false;
+                        }
+
+                        // Filtro por fecha desde
+                        if (mostrar && fechaDesdeDate && fecha) {
+                            if (fecha < fechaDesdeDate) {
+                                mostrar = false;
+                            }
+                        }
+
+                        // Filtro por fecha hasta
+                        if (mostrar && fechaHastaDate && fecha) {
+                            if (fecha > fechaHastaDate) {
+                                mostrar = false;
+                            }
+                        }
+
+                        if (mostrar) {
+                            card.removeClass('hidden');
+                            tareasVisibles.push({
+                                element: card,
+                                estado: estado,
+                                fecha: fecha,
+                                titulo: card.data('titulo') || card.find('.task-title').text()
+                            });
+                        } else {
+                            card.addClass('hidden');
+                        }
+                    });
+
+                    // Ordenar tareas
+                    tareasVisibles.sort((a, b) => {
+                        switch (ordenarPor) {
+                            case 'fecha-desc':
+                                if (!a.fecha && !b.fecha) return 0;
+                                if (!a.fecha) return 1;
+                                if (!b.fecha) return -1;
+                                return b.fecha - a.fecha;
+                            
+                            case 'fecha-asc':
+                                if (!a.fecha && !b.fecha) return 0;
+                                if (!a.fecha) return 1;
+                                if (!b.fecha) return -1;
+                                return a.fecha - b.fecha;
+                            
+                            
+                            case 'estado':
+                                return getEstadoOrden(a.estado) - getEstadoOrden(b.estado);
+                            
+                            default:
+                                return 0;
+                        }
+                    });
+
+                    const container = $('#tasks-list');
+                    tareasVisibles.forEach((tarea, index) => {
+                        tarea.element.css('animation-delay', (index * 0.05) + 's');
+                        container.append(tarea.element);
+                    });
+
+                    // Actualizar contador
+                    $('#num-mostradas').text(tareasVisibles.length);
+                    $('#num-total').text(totalTareas);
+
+                    // Mostrar/ocultar mensaje de sin resultados
+                    if (tareasVisibles.length === 0 && totalTareas > 0) {
+                        $('#no-results').addClass('visible');
+                    } else {
+                        $('#no-results').removeClass('visible');
+                    }
+
+                    // Resaltar stat card activo
+                    $('.stat-card').removeClass('active');
+                    if (filtroEstado !== 'TODOS') {
+                        $(`.stat-card[data-filter="${filtroEstado}"]`).addClass('active');
+                    }
+                }
+
+                // Actualizar estadísticas
                 function actualizarEstadisticas() {
                     let pending = 0;
+                    let iniciada = 0;
                     let completed = 0;
 
-                    $('.task-badge span').each(function () {
-                        const estado = $(this).text().trim();
-                        if (estado === 'PENDIENTE' || estado === 'INICIADA') {
+                    $('.task-card').each(function () {
+                        const estado = $(this).find('.task-badge span').text().trim();
+                        if (estado === 'PENDIENTE') {
                             pending++;
+                        } else if (estado === 'INICIADA') {
+                            iniciada++;
                         } else if (estado === 'COMPLETADA') {
                             completed++;
                         }
                     });
 
                     $('#stat-pending').text(pending);
+                    $('#stat-iniciada').text(iniciada);
                     $('#stat-completed').text(completed);
+
+                    // Actualizar contador total
+                    const total = $('.task-card').length;
+                    $('#num-total').text(total);
                 }
-                
+
+                // Limpiar filtros
+                function limpiarFiltros() {
+                    $('#filtro-estado').val('TODOS');
+                    $('#ordenar-por').val('fecha-desc');
+                    $('#fecha-desde').val('');
+                    $('#fecha-hasta').val('');
+                    
+                    aplicarFiltrosYOrden();
+                    showToast('Filtros limpiados', 'info');
+                }
+
+                // Event listeners para filtros
+                $('#filtro-estado, #ordenar-por, #fecha-desde, #fecha-hasta').on('change', function() {
+                    aplicarFiltrosYOrden();
+                });
+
+                $('#btn-limpiar-filtros, #btn-limpiar-desde-empty').on('click', limpiarFiltros);
+
+                $('.stat-card').on('click', function() {
+                    const filtro = $(this).data('filter');
+                    $('#filtro-estado').val(filtro);
+                    aplicarFiltrosYOrden();
+                });
+
+                // Inicializar
                 actualizarEstadisticas();
+                aplicarFiltrosYOrden();
+
+                // CAMBIO DE ESTADO 
 
                 const token = /*[[${session.token}]]*/ '';
                 const idUsuario = /*[[${session.idUsuario}]]*/ '';
@@ -899,6 +1262,7 @@
                     const nuevoEstado = $(this).data('estado');
                     const dropdownElement = $(this).closest('.dropdown');
                     const badge = dropdownElement.find('.task-badge');
+                    const taskCard = badge.closest('.task-card');
                     
                     const estadoActual = badge.attr('data-estado-actual');
                     
@@ -928,6 +1292,10 @@
                                 
                                 badge.find('span').text(nuevoEstado);
                                 
+                                // Actualizar data-estado en la tarjeta
+                                taskCard.attr('data-estado', nuevoEstado);
+                                taskCard.data('estado', nuevoEstado);
+                                
                                 if (nuevoEstado === 'INICIADA') {
                                     badge.addClass('badge-iniciada');
                                 } else if (nuevoEstado === 'PENDIENTE') {
@@ -936,10 +1304,10 @@
                                     badge.addClass('badge-completada');
                                 }
                                 
-                                const taskCard = badge.closest('.task-card');
                                 taskCard.find('.btn-ver-detalle').attr('data-estado', nuevoEstado);
                                 
                                 actualizarEstadisticas();
+                                aplicarFiltrosYOrden(); // Re-aplicar filtros después de cambio
                                 
                                 setTimeout(function() {
                                     limpiarDropdowns();
@@ -989,6 +1357,9 @@
                         e.stopPropagation();
                     }
                 });
+
+                // MODAL DE DETALLE 
+                
 
                 $(document).on('click', '.btn-ver-detalle', function () {
                     const id = $(this).data('id');

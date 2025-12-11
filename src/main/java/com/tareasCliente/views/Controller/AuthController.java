@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 @Controller
@@ -158,8 +160,7 @@ public class AuthController {
             model.addAttribute("error", 
                 result != null ? result.errorMessage : "Error al iniciar sesión");
         }
-           
-    } catch (org.springframework.web.client.HttpClientErrorException ex) {
+    } catch (HttpClientErrorException ex) {
         String errorBody = ex.getResponseBodyAsString();
         
         if (errorBody != null && !errorBody.isEmpty() && errorBody.contains("\"errorMessage\"")) {
@@ -174,10 +175,8 @@ public class AuthController {
         } else {
             model.addAttribute("warning", "Debes verificar tu correo para validar tu cuenta");
         }
-        
-    } catch (org.springframework.web.client.HttpServerErrorException ex) {
+    } catch (HttpServerErrorException ex) {
         model.addAttribute("error", "Error en el servidor. Intenta de nuevo más tarde.");
-        
     } catch (Exception ex) {
         model.addAttribute("error", "Error de conexión con el servidor");
     }
